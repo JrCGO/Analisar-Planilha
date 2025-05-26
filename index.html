@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Analytics - Dashboard de Projetos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --border-color: #334155;
+            --card-bg: rgba(26, 26, 46, 0.8);
+            --glass-bg: rgba(139, 92, 246, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --border-color: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --glass-bg: rgba(139, 92, 246, 0.05);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 0;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 0 2rem;
+        }
+
+        .logo h1 {
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 0 2rem;
+        }
+
+        .theme-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-switch::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .theme-switch::before {
+            transform: translateX(30px);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .header {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .header h2 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .upload-area {
+            border: 3px dashed var(--accent-primary);
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-secondary);
+            background: var(--glass-bg);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-secondary);
+            background: var(--glass-bg);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Filters */
+        .filters {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .filter-input {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }
+        .stat-icon.success { background: linear-gradient(135deg, var(--accent-success), #34d399); }
+        .stat-icon.warning { background: linear-gradient(135deg, var(--accent-warning), #fbbf24); }
+        .stat-icon.danger { background: linear-gradient(135deg, var(--accent-danger), #f87171); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Tables */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            color: var(--text-primary);
+        }
+
+        .table tbody tr:hover {
+            background: var(--glass-bg);
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-resolved {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-success);
+        }
+
+        .status-open {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        .status-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+        }
+
+        /* Priority badges */
+        .priority-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .priority-urgent {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        .priority-high {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+        }
+
+        .priority-medium {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent-secondary);
+        }
+
+        .priority-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-success);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Export buttons */
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Projects Section */
+        .projects-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Project Cards */
+        .projects-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-left: 5px solid var(--accent-primary);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .project-card:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .project-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .project-stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--glass-bg);
+            border-radius: 10px;
+        }
+
+        .project-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .project-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .pagination button.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem 0;
+            }
+            
+            .nav-menu {
+                display: flex;
+                overflow-x: auto;
+                padding: 0 1rem;
+            }
+            
+            .nav-item {
+                margin-right: 1rem;
+                margin-bottom: 0;
+                white-space: nowrap;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-chart-line"></i> Jira Analytics</h1>
+                <p>Dashboard de Projetos</p>
+            </div>
+            
+            <div class="theme-toggle">
+                <div class="theme-switch" id="themeToggle"></div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="projects">
+                            <i class="fas fa-project-diagram"></i>
+                            Projetos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="items">
+                            <i class="fas fa-list"></i>
+                            Itens Detalhados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="upload">
+                            <i class="fas fa-upload"></i>
+                            Importar Dados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="export">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <div class="header">
+                    <h2>Dashboard de Projetos</h2>
+                    <p>Análise completa de dados do Jira com métricas de produtividade</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">Projeto</label>
+                            <select class="filter-input" id="projectFilter">
+                                <option value="">Todos os projetos</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Ano</label>
+                            <select class="filter-input" id="yearFilter">
+                                <option value="">Todos os anos</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Mês</label>
+                            <select class="filter-input" id="monthFilter">
+                                <option value="">Todos os meses</option>
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select class="filter-input" id="statusFilter">
+                                <option value="">Todos os status</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalItems">0</div>
+                        <div class="stat-label">Total de Itens</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="resolvedItems">0</div>
+                        <div class="stat-label">Itens Resolvidos</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="openItems">0</div>
+                        <div class="stat-label">Itens em Aberto</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="avgResolutionTime">0</div>
+                        <div class="stat-label">Tempo Médio (dias úteis)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects Section -->
+            <section id="projects" class="section">
+                <div class="header">
+                    <h2>Análise por Projeto</h2>
+                    <p>Métricas detalhadas de cada projeto</p>
+                </div>
+
+                <div class="projects-section">
+                    <div class="projects-grid" id="projectsGrid">
+                        <div class="loading">
+                            <i class="fas fa-spinner"></i>
+                            <p>Carregue um arquivo para visualizar os dados dos projetos</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Items Section -->
+            <section id="items" class="section">
+                <div class="header">
+                    <h2>Itens Detalhados</h2>
+                    <p>Visualização completa de todos os itens por projeto</p>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Lista de Itens</h3>
+                        <div class="export-buttons">
+                            <button class="btn btn-secondary" id="exportItemsCSV">
+                                <i class="fas fa-file-csv"></i>
+                                Exportar CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th>Projeto</th>
+                                    <th>Tipo</th>
+                                    <th>Resumo</th>
+                                    <th>Responsável</th>
+                                    <th>Status</th>
+                                    <th>Prioridade</th>
+                                    <th>Data Abertura</th>
+                                    <th>Data Fechamento</th>
+                                    <th>Dias em Aberto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsTableBody">
+                                <tr>
+                                    <td colspan="9" class="loading">
+                                        <i class="fas fa-spinner"></i>
+                                        <p>Carregue um arquivo para visualizar os itens</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="itemsPagination"></div>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section id="upload" class="section">
+                <div class="header">
+                    <h2>Importar Dados</h2>
+                    <p>Carregue seus arquivos CSV ou XML do Jira</p>
+                </div>
+
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Arraste e solte seus arquivos aqui</div>
+                        <div class="upload-subtext">Suporte para CSV e XML (separadores: vírgula ou ponto e vírgula)</div>
+                        <input type="file" id="fileInput" accept=".csv,.xml" multiple>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section id="export" class="section">
+                <div class="header">
+                    <h2>Exportar Dados</h2>
+                    <p>Exporte suas análises em diferentes formatos</p>
+                </div>
+
+                <div class="projects-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Opções de Exportação</h3>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-file-csv"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">CSV</div>
+                            <div class="stat-label">Resumo por Projeto</div>
+                            <button class="btn btn-primary" id="exportCSV" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-download"></i>
+                                Exportar CSV
+                            </button>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon success">
+                                    <i class="fas fa-file-code"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">XML</div>
+                            <div class="stat-label">Resumo por Projeto</div>
+                            <button class="btn btn-primary" id="exportXML" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-download"></i>
+                                Exportar XML
+                            </button>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">Detalhado</div>
+                            <div class="stat-label">Todos os Itens</div>
+                            <button class="btn btn-primary" id="exportDetailedCSV" style="margin-top: 1rem; width: 100%;">
+                                <i class="fas fa-download"></i>
+                                Exportar Detalhado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        class JiraAnalytics {
+            constructor() {
+                this.data = [];
+                this.filteredData = [];
+                this.projects = {};
+                this.currentPage = 1;
+                this.itemsPerPage = 20;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupNavigation();
+                this.setupTheme();
+            }
+
+            setupEventListeners() {
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('fileInput');
+
+                // Upload area events
+                uploadArea.addEventListener('click', () => fileInput.click());
+                uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+                uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                uploadArea.addEventListener('drop', this.handleDrop.bind(this));
+
+                // File input change
+                fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+
+                // Export buttons
+                document.getElementById('exportCSV').addEventListener('click', () => this.exportData('csv'));
+                document.getElementById('exportXML').addEventListener('click', () => this.exportData('xml'));
+                document.getElementById('exportItemsCSV').addEventListener('click', () => this.exportItemsData('csv'));
+                document.getElementById('exportDetailedCSV').addEventListener('click', () => this.exportItemsData('csv'));
+
+                // Filters
+                document.getElementById('projectFilter').addEventListener('change', this.applyFilters.bind(this));
+                document.getElementById('yearFilter').addEventListener('change', this.applyFilters.bind(this));
+                document.getElementById('monthFilter').addEventListener('change', this.applyFilters.bind(this));
+                document.getElementById('statusFilter').addEventListener('change', this.applyFilters.bind(this));
+            }
+
+            setupNavigation() {
+                const navLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('.section');
+
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Remove active class from all links and sections
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        sections.forEach(s => s.classList.remove('active'));
+                        
+                        // Add active class to clicked link
+                        link.classList.add('active');
+                        
+                        // Show corresponding section
+                        const sectionId = link.getAttribute('data-section');
+                        const section = document.getElementById(sectionId);
+                        if (section) {
+                            section.classList.add('active');
+                        }
+                    });
+                });
+            }
+
+            setupTheme() {
+                const themeToggle = document.getElementById('themeToggle');
+                const body = document.body;
+
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = body.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    body.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+
+                // Load saved theme
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                body.setAttribute('data-theme', savedTheme);
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('dragover');
+            }
+
+            handleDragLeave(e) {
+                e.currentTarget.classList.remove('dragover');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                this.processFiles(files);
+            }
+
+            handleFileSelect(e) {
+                const files = e.target.files;
+                this.processFiles(files);
+            }
+
+            async processFiles(files) {
+                this.data = []; // Reset data
+                for (let file of files) {
+                    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                        await this.parseCSV(file);
+                    } else if (file.type === 'text/xml' || file.name.endsWith('.xml')) {
+                        await this.parseXML(file);
+                    }
+                }
+                this.analyzeData();
+                this.setupFilters();
+                this.applyFilters();
+                this.updateUI();
+            }
+
+            async parseCSV(file) {
+                const text = await file.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                if (lines.length === 0) return;
+
+                // Detect separator
+                const firstLine = lines[0];
+                const commaCount = (firstLine.match(/,/g) || []).length;
+                const semicolonCount = (firstLine.match(/;/g) || []).length;
+                const separator = semicolonCount > commaCount ? ';' : ',';
+
+                // Parse header
+                const headers = this.parseCSVLine(lines[0], separator);
+                
+                // Find column indices
+                const columnMap = this.mapColumns(headers);
+
+                // Parse data
+                for (let i = 1; i < lines.length; i++) {
+                    const values = this.parseCSVLine(lines[i], separator);
+                    if (values.length >= headers.length) {
+                        const item = this.createItemFromRow(values, columnMap);
+                        if (item) this.data.push(item);
+                    }
+                }
+            }
+
+            parseCSVLine(line, separator) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === separator && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                result.push(current.trim());
+                return result;
+            }
+
+            async parseXML(file) {
+                const text = await file.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, 'text/xml');
+                
+                // Basic XML parsing - adjust based on your XML structure
+                const items = xmlDoc.querySelectorAll('item');
+                items.forEach(item => {
+                    const data = {
+                        projectName: this.getXMLValue(item, 'projectName'),
+                        itemType: this.getXMLValue(item, 'itemType'),
+                        summary: this.getXMLValue(item, 'summary'),
+                        assignee: this.getXMLValue(item, 'assignee'),
+                        reporter: this.getXMLValue(item, 'reporter'),
+                        priority: this.getXMLValue(item, 'priority'),
+                        status: this.getXMLValue(item, 'status'),
+                        created: this.getXMLValue(item, 'created'),
+                        resolved: this.getXMLValue(item, 'resolved')
+                    };
+                    
+                    if (data.projectName) this.data.push(data);
+                });
+            }
+
+            getXMLValue(element, tagName) {
+                const tag = element.querySelector(tagName);
+                return tag ? tag.textContent.trim() : '';
+            }
+
+            mapColumns(headers) {
+                const map = {};
+                const mappings = {
+                    projectName: ['nome do projeto', 'project name', 'projeto'],
+                    itemType: ['tipo de item', 'item type', 'tipo'],
+                    summary: ['resumo', 'summary', 'título', 'title'],
+                    assignee: ['responsável', 'assignee', 'responsavel'],
+                    reporter: ['relator', 'reporter'],
+                    priority: ['prioridade', 'priority'],
+                    status: ['status'],
+                    created: ['criado', 'created', 'data criação'],
+                    resolved: ['resolvido', 'resolved', 'data resolução']
+                };
+
+                Object.keys(mappings).forEach(key => {
+                    const index = headers.findIndex(header => 
+                        mappings[key].some(term => 
+                            header.toLowerCase().includes(term.toLowerCase())
+                        )
+                    );
+                    if (index !== -1) map[key] = index;
+                });
+
+                return map;
+            }
+
+            createItemFromRow(values, columnMap) {
+                const item = {};
+                
+                Object.keys(columnMap).forEach(key => {
+                    const index = columnMap[key];
+                    if (index !== undefined && values[index]) {
+                        item[key] = values[index].replace(/"/g, '').trim();
+                    }
+                });
+
+                // Add calculated fields
+                if (item.created) {
+                    const createdDate = this.parseDate(item.created);
+                    if (createdDate) {
+                        item.createdDate = createdDate;
+                        
+                        if (item.resolved) {
+                            const resolvedDate = this.parseDate(item.resolved);
+                            if (resolvedDate) {
+                                item.resolvedDate = resolvedDate;
+                                item.daysToResolve = this.calculateBusinessDays(createdDate, resolvedDate);
+                            }
+                        } else {
+                            item.daysOpen = this.calculateBusinessDays(createdDate, new Date());
+                        }
+                    }
+                }
+
+                return item.projectName ? item : null;
+            }
+
+            setupFilters() {
+                // Setup project filter
+                const projectFilter = document.getElementById('projectFilter');
+                const projects = [...new Set(this.data.map(item => item.projectName))].sort();
+                projectFilter.innerHTML = '<option value="">Todos os projetos</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project;
+                    option.textContent = project;
+                    projectFilter.appendChild(option);
+                });
+
+                // Setup year filter
+                const yearFilter = document.getElementById('yearFilter');
+                const years = [...new Set(this.data.map(item => {
+                    if (item.createdDate) {
+                        return item.createdDate.getFullYear();
+                    }
+                    return null;
+                }).filter(year => year !== null))].sort((a, b) => b - a);
+                
+                yearFilter.innerHTML = '<option value="">Todos os anos</option>';
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearFilter.appendChild(option);
+                });
+
+                // Setup status filter
+                const statusFilter = document.getElementById('statusFilter');
+                const statuses = [...new Set(this.data.map(item => item.status))].filter(status => status).sort();
+                statusFilter.innerHTML = '<option value="">Todos os status</option>';
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    statusFilter.appendChild(option);
+                });
+            }
+
+            applyFilters() {
+                const projectFilter = document.getElementById('projectFilter').value;
+                const yearFilter = document.getElementById('yearFilter').value;
+                const monthFilter = document.getElementById('monthFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+
+                this.filteredData = this.data.filter(item => {
+                    if (projectFilter && item.projectName !== projectFilter) return false;
+                    if (statusFilter && item.status !== statusFilter) return false;
+                    
+                    if (yearFilter || monthFilter) {
+                        if (!item.createdDate) return false;
+                        
+                        if (yearFilter && item.createdDate.getFullYear() !== parseInt(yearFilter)) return false;
+                        if (monthFilter && (item.createdDate.getMonth() + 1) !== parseInt(monthFilter)) return false;
+                    }
+                    
+                    return true;
+                });
+
+                this.analyzeFilteredData();
+                this.updateUI();
+                this.updateItemsTable();
+            }
+
+            analyzeData() {
+                this.projects = {};
+                
+                this.data.forEach(item => {
+                    const projectName = item.projectName;
+                    
+                    if (!this.projects[projectName]) {
+                        this.projects[projectName] = {
+                            name: projectName,
+                            total: 0,
+                            resolved: 0,
+                            open: 0,
+                            items: [],
+                            avgResolutionTime: 0,
+                            avgOpenTime: 0
+                        };
+                    }
+
+                    const project = this.projects[projectName];
+                    project.total++;
+                    project.items.push(item);
+
+                    const isResolved = this.isItemResolved(item);
+                    if (isResolved) {
+                        project.resolved++;
+                    } else {
+                        project.open++;
+                    }
+                });
+
+                // Calculate time metrics
+                Object.values(this.projects).forEach(project => {
+                    this.calculateTimeMetrics(project);
+                });
+            }
+
+            analyzeFilteredData() {
+                this.filteredProjects = {};
+                
+                this.filteredData.forEach(item => {
+                    const projectName = item.projectName;
+                    
+                    if (!this.filteredProjects[projectName]) {
+                        this.filteredProjects[projectName] = {
+                            name: projectName,
+                            total: 0,
+                            resolved: 0,
+                            open: 0,
+                            items: [],
+                            avgResolutionTime: 0,
+                            avgOpenTime: 0
+                        };
+                    }
+
+                    const project = this.filteredProjects[projectName];
+                    project.total++;
+                    project.items.push(item);
+
+                    const isResolved = this.isItemResolved(item);
+                    if (isResolved) {
+                        project.resolved++;
+                    } else {
+                        project.open++;
+                    }
+                });
+
+                // Calculate time metrics
+                Object.values(this.filteredProjects).forEach(project => {
+                    this.calculateTimeMetrics(project);
+                });
+            }
+
+            isItemResolved(item) {
+                if (!item.status) return false;
+                
+                const resolvedStatuses = [
+                    'resolvido', 'resolved', 'fechado', 'closed', 
+                    'concluído', 'done', 'finalizado', 'finished',
+                    'itens concluídos', 'concluido'
+                ];
+                
+                return resolvedStatuses.some(status => 
+                    item.status.toLowerCase().includes(status.toLowerCase())
+                ) || !!item.resolved;
+            }
+
+            calculateTimeMetrics(project) {
+                let totalResolutionDays = 0;
+                let totalOpenDays = 0;
+                let resolvedCount = 0;
+                let openCount = 0;
+
+                project.items.forEach(item => {
+                    if (!item.createdDate) return;
+
+                    if (this.isItemResolved(item) && item.daysToResolve !== undefined) {
+                        totalResolutionDays += item.daysToResolve;
+                        resolvedCount++;
+                    } else if (item.daysOpen !== undefined) {
+                        totalOpenDays += item.daysOpen;
+                        openCount++;
+                    }
+                });
+
+                project.avgResolutionTime = resolvedCount > 0 ? 
+                    Math.round(totalResolutionDays / resolvedCount) : 0;
+                project.avgOpenTime = openCount > 0 ? 
+                    Math.round(totalOpenDays / openCount) : 0;
+            }
+
+            parseDate(dateString) {
+                if (!dateString) return null;
+                
+                // Try different date formats
+                const formats = [
+                    /(\d{1,2})\/(\w{3})\/(\d{2,4})\s+(\d{1,2}):(\d{2})\s*(AM|PM)/i, // 30/out/24 4:10 PM
+                    /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/,  // DD/MM/YYYY
+                    /(\d{4})-(\d{1,2})-(\d{1,2})/,     // YYYY-MM-DD
+                ];
+
+                for (let format of formats) {
+                    const match = dateString.match(format);
+                    if (match) {
+                        if (format === formats[0]) {
+                            // Handle Portuguese month names
+                            const monthMap = {
+                                'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3,
+                                'mai': 4, 'jun': 5, 'jul': 6, 'ago': 7,
+                                'set': 8, 'out': 9, 'nov': 10, 'dez': 11
+                            };
+                            const day = parseInt(match[1]);
+                            const month = monthMap[match[2].toLowerCase()];
+                            let year = parseInt(match[3]);
+                            if (year < 100) year += 2000;
+                            
+                            return new Date(year, month, day);
+                        } else if (format === formats[1]) {
+                            const day = parseInt(match[1]);
+                            const month = parseInt(match[2]) - 1;
+                            let year = parseInt(match[3]);
+                            if (year < 100) year += 2000;
+                            
+                            return new Date(year, month, day);
+                        } else {
+                            return new Date(match[0]);
+                        }
+                    }
+                }
+
+                return new Date(dateString);
+            }
+
+            calculateBusinessDays(startDate, endDate) {
+                let count = 0;
+                const current = new Date(startDate);
+                
+                while (current <= endDate) {
+                    const dayOfWeek = current.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+                        count++;
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+                
+                return count;
+            }
+
+            updateUI() {
+                this.updateStats();
+                this.updateProjectsGrid();
+            }
+
+            updateStats() {
+                const data = this.filteredData.length > 0 ? this.filteredData : this.data;
+                const projects = this.filteredData.length > 0 ? this.filteredProjects : this.projects;
+                
+                const totalItems = data.length;
+                const resolvedItems = data.filter(item => this.isItemResolved(item)).length;
+                const openItems = totalItems - resolvedItems;
+                
+                // Calculate average resolution time across all projects
+                const avgTimes = Object.values(projects)
+                    .filter(p => p.avgResolutionTime > 0)
+                    .map(p => p.avgResolutionTime);
+                const avgResolutionTime = avgTimes.length > 0 ? 
+                    Math.round(avgTimes.reduce((a, b) => a + b, 0) / avgTimes.length) : 0;
+
+                document.getElementById('totalItems').textContent = totalItems;
+                document.getElementById('resolvedItems').textContent = resolvedItems;
+                document.getElementById('openItems').textContent = openItems;
+                document.getElementById('avgResolutionTime').textContent = avgResolutionTime;
+            }
+
+            updateProjectsGrid() {
+                const grid = document.getElementById('projectsGrid');
+                const projects = this.filteredData.length > 0 ? this.filteredProjects : this.projects;
+                
+                if (Object.keys(projects).length === 0) {
+                    grid.innerHTML = `
+                        <div class="loading">
+                            <i class="fas fa-inbox"></i>
+                            <p>Nenhum projeto encontrado nos dados carregados</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = Object.values(projects).map(project => `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-name">${project.name}</div>
+                        </div>
+                        <div class="project-stats">
+                            <div class="project-stat">
+                                <div class="project-stat-value">${project.total}</div>
+                                <div class="project-stat-label">Total</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${project.resolved}</div>
+                                <div class="project-stat-label">Resolvidos</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${project.open}</div>
+                                <div class="project-stat-label">Em Aberto</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${project.avgResolutionTime}</div>
+                                <div class="project-stat-label">Tempo Médio (dias)</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${project.avgOpenTime}</div>
+                                <div class="project-stat-label">Tempo Aberto (dias)</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${Math.round((project.resolved / project.total) * 100)}%</div>
+                                <div class="project-stat-label">Taxa Resolução</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateItemsTable() {
+                const tbody = document.getElementById('itemsTableBody');
+                const data = this.filteredData.length > 0 ? this.filteredData : this.data;
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="loading">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum item encontrado</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Sort by project and created date
+                const sortedData = [...data].sort((a, b) => {
+                    if (a.projectName !== b.projectName) {
+                        return a.projectName.localeCompare(b.projectName);
+                    }
+                    if (a.createdDate && b.createdDate) {
+                        return b.createdDate - a.createdDate;
+                    }
+                    return 0;
+                });
+
+                // Pagination
+                const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                const endIndex = startIndex + this.itemsPerPage;
+                const pageData = sortedData.slice(startIndex, endIndex);
+
+                tbody.innerHTML = pageData.map(item => `
+                    <tr>
+                        <td><strong>${item.projectName}</strong></td>
+                        <td>${item.itemType || '-'}</td>
+                        <td>${item.summary || '-'}</td>
+                        <td>${item.assignee || '-'}</td>
+                        <td>${this.getStatusBadge(item.status)}</td>
+                        <td>${this.getPriorityBadge(item.priority)}</td>
+                        <td>${item.createdDate ? item.createdDate.toLocaleDateString('pt-BR') : '-'}</td>
+                        <td>${item.resolvedDate ? item.resolvedDate.toLocaleDateString('pt-BR') : '-'}</td>
+                        <td>
+                            ${item.daysToResolve !== undefined ? 
+                                `<span class="status-resolved">${item.daysToResolve} dias</span>` : 
+                                item.daysOpen !== undefined ? 
+                                `<span class="status-open">${item.daysOpen} dias</span>` : '-'
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+
+                this.updatePagination(sortedData.length);
+            }
+
+            getStatusBadge(status) {
+                if (!status) return '-';
+                
+                const isResolved = this.isItemResolved({ status });
+                const badgeClass = isResolved ? 'status-resolved' : 'status-open';
+                
+                return `<span class="status-badge ${badgeClass}">${status}</span>`;
+            }
+
+            getPriorityBadge(priority) {
+                if (!priority) return '-';
+                
+                let badgeClass = 'priority-medium';
+                const priorityLower = priority.toLowerCase();
+                
+                if (priorityLower.includes('urgent') || priorityLower.includes('crítica')) {
+                    badgeClass = 'priority-urgent';
+                } else if (priorityLower.includes('alta') || priorityLower.includes('high')) {
+                    badgeClass = 'priority-high';
+                } else if (priorityLower.includes('baixa') || priorityLower.includes('low')) {
+                    badgeClass = 'priority-low';
+                }
+                
+                return `<span class="priority-badge ${badgeClass}">${priority}</span>`;
+            }
+
+            updatePagination(totalItems) {
+                const pagination = document.getElementById('itemsPagination');
+                const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+                
+                if (totalPages <= 1) {
+                    pagination.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = '';
+                
+                // Previous button
+                paginationHTML += `
+                    <button ${this.currentPage === 1 ? 'disabled' : ''} onclick="analytics.changePage(${this.currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+                
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                        paginationHTML += `
+                            <button class="${i === this.currentPage ? 'active' : ''}" onclick="analytics.changePage(${i})">
+                                ${i}
+                            </button>
+                        `;
+                    } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                        paginationHTML += '<span>...</span>';
+                    }
+                }
+                
+                // Next button
+                paginationHTML += `
+                    <button ${this.currentPage === totalPages ? 'disabled' : ''} onclick="analytics.changePage(${this.currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+                
+                pagination.innerHTML = paginationHTML;
+            }
+
+            changePage(page) {
+                this.currentPage = page;
+                this.updateItemsTable();
+            }
+
+            exportData(format) {
+                const projects = this.filteredData.length > 0 ? this.filteredProjects : this.projects;
+                
+                if (Object.keys(projects).length === 0) {
+                    alert('Nenhum dado para exportar. Carregue um arquivo primeiro.');
+                    return;
+                }
+
+                const summary = Object.values(projects).map(project => ({
+                    'Nome do Projeto': project.name,
+                    'Total de Itens': project.total,
+                    'Itens Resolvidos': project.resolved,
+                    'Itens em Aberto': project.open,
+                    'Tempo Médio de Resolução (dias úteis)': project.avgResolutionTime,
+                    'Tempo Médio em Aberto (dias úteis)': project.avgOpenTime,
+                    'Taxa de Resolução (%)': Math.round((project.resolved / project.total) * 100)
+                }));
+
+                if (format === 'csv') {
+                    this.downloadCSV(summary, 'jira-analytics-resumo.csv');
+                } else if (format === 'xml') {
+                    this.downloadXML(summary);
+                }
+            }
+
+            exportItemsData(format) {
+                const data = this.filteredData.length > 0 ? this.filteredData : this.data;
+                
+                if (data.length === 0) {
+                    alert('Nenhum dado para exportar. Carregue um arquivo primeiro.');
+                    return;
+                }
+
+                const itemsData = data.map(item => ({
+                    'Projeto': item.projectName,
+                    'Tipo': item.itemType || '',
+                    'Resumo': item.summary || '',
+                    'Responsável': item.assignee || '',
+                    'Relator': item.reporter || '',
+                    'Status': item.status || '',
+                    'Prioridade': item.priority || '',
+                    'Data Abertura': item.createdDate ? item.createdDate.toLocaleDateString('pt-BR') : '',
+                    'Data Fechamento': item.resolvedDate ? item.resolvedDate.toLocaleDateString('pt-BR') : '',
+                    'Dias para Resolver': item.daysToResolve || '',
+                    'Dias em Aberto': item.daysOpen || ''
+                }));
+
+                this.downloadCSV(itemsData, 'jira-analytics-itens-detalhados.csv');
+            }
+
+            downloadCSV(data, filename) {
+                if (data.length === 0) return;
+
+                const headers = Object.keys(data[0]);
+                const csvContent = [
+                    headers.join(','),
+                    ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+                ].join('\n');
+
+                this.downloadFile(csvContent, filename, 'text/csv');
+            }
+
+            downloadXML(data) {
+                const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<projects>
+${data.map(project => `    <project>
+        <name>${this.escapeXML(project['Nome do Projeto'])}</name>
+        <totalItems>${project['Total de Itens']}</totalItems>
+        <resolvedItems>${project['Itens Resolvidos']}</resolvedItems>
+        <openItems>${project['Itens em Aberto']}</openItems>
+        <avgResolutionTime>${project['Tempo Médio de Resolução (dias úteis)']}</avgResolutionTime>
+        <avgOpenTime>${project['Tempo Médio em Aberto (dias úteis)']}</avgOpenTime>
+        <resolutionRate>${project['Taxa de Resolução (%)']}</resolutionRate>
+    </project>`).join('\n')}
+</projects>`;
+
+                this.downloadFile(xmlContent, 'jira-analytics-export.xml', 'text/xml');
+            }
+
+            escapeXML(str) {
+                return str.toString()
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+            }
+
+            downloadFile(content, filename, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Initialize the application
+        let analytics;
+        document.addEventListener('DOMContentLoaded', () => {
+            analytics = new JiraAnalytics();
+        });
+    </script>
+</body>
+</html>
