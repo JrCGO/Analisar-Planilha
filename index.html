@@ -876,8 +876,8 @@
                         <table class="table" id="itemsTable">
                             <thead>
                                 <tr>
-                                    <th>Chave</th>
                                     <th>Projeto</th>
+                                    <th>Chave</th>
                                     <th>Tipo</th>
                                     <th>Resumo</th>
                                     <th>Responsável</th>
@@ -1605,8 +1605,8 @@
 
                 tbody.innerHTML = pageData.map(item => `
                     <tr>
-                        <td><span class="item-key">${item.itemKey || '-'}</span></td>
                         <td><strong>${item.projectName}</strong></td>
+                        <td><span class="item-key">${item.itemKey || '-'}</span></td>
                         <td>${item.itemType || '-'}</td>
                         <td>${item.summary || '-'}</td>
                         <td>${item.assignee || '-'}</td>
